@@ -1,4 +1,3 @@
 Git is a distributed version control system.
-Stay hungry,Stay foolish!Learn from everybody!
-Git has a mutable index called stage.
+starting using github!
 2015/1/23
