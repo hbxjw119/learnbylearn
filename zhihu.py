@@ -27,7 +27,7 @@ class Zhihu():
         urllib2.install_opener(opener)
 
     def login(self):
-        response = urllib2.urlopen(zhihu_url).read()
+        response = self.opener.open(zhihu_url).read()
         soup = BeautifulSoup(response)
         # fetch the value of _xsrf
         xsf = soup.find('input', attrs = {'name': '_xsrf'})['value']
@@ -38,7 +38,7 @@ class Zhihu():
         #try to send a request
         try:
             req = urllib2.Request(zhihu_loginurl, urllib.urlencode(postdata))
-            self.res = urllib2.urlopen(req).read()
+            self.res = self.opener.open(req).read()
         except Exception, e:
             print 'Failed to login. Error: ', str(e)
             return False
@@ -72,32 +72,57 @@ class Zhihu():
         return (user_page_url, user_ask_url, user_answers_url, user_collections_url)
 
     def get_answer_list(self,user_ask_url):
+        '''
+        获取用户答案，问题链接，题目，获赞数，
+        '''
         anspage = urllib2.urlopen(user_ask_url).read()
         anssoup = BeautifulSoup(anspage)
         answer_num = anssoup.find('a', {'class': 'item active'}).span.string
-        print 'there are ' + answer_num + ' answers totally'
+        print user_ask_url.split('/')[-2] + 'has ' + answer_num + ' answers totally'
+        
+        #获得答案的总页数
         answer_pages = round(float(answer_num) / 20)
-        # l = people_answers_soup.find_all('div',{'class':'zm-item'})
-        for i in range(1, int(answer_pages + 1)):
-            current_url = user_ask_url + '?page=' + str(i)
-            try:
-                current_page = urllib2.urlopen(current_url).read()
-            except Exception, e:
-                print 'error' + str(e)
-            people_answers_soup = BeautifulSoup(current_page)
-            l = people_answers_soup.find_all('div', {'class': 'zm-item'})
+        
+        #如果答案只有一页
+        if not answer_pages:
+            answer_page = urllib2.urlopen(user_ask_url)
+            people_answers_soup = BeautifulSoup(answer_page)
+            l = people_answers_soup.find_all('div', class_='zm-item')
             for it in l:
+                question_url = zhihu_url + it.a['href']
+                voteable = it.find('a', {'name': 'expand'})
+                vote = voteable['data-votecount']
+                print question_url, it.a.text, vote
+                
+                answer_soup = BeautifulSoup(urllib2.urlopen(question_url))
+                answer_contentlist = answer_soup.find_all('div',class_='zm-editable-content')
+                answer_content = answer_contentlist[-1].text
+                print answer_content.replace('\n',' ')
+                
+        else:        
+            for i in range(1, int(answer_pages + 1)):
+                current_url = user_ask_url + '?page=' + str(i)
                 try:
-                    voteable = it.find('a', {'name': 'expand'})
-                    if voteable:
-                        vote = voteable['data-votecount']
-                    else:
-                        vote = 0
+                    current_page = urllib2.urlopen(current_url)
+                    people_answers_soup = BeautifulSoup(current_page)
+                    l = people_answers_soup.find_all('div', {'class': 'zm-item'})
+                    for it in l:
+                        question_url = zhihu_url + it.a['href']
+                        voteable = it.find('a', {'name': 'expand'})
+                        if voteable:
+                            vote = voteable['data-votecount']
+                        else:
+                            vote = 0
+                        print question_url, it.a.text, vote
+
+                        answer_soup = BeautifulSoup(urllib2.urlopen(question_url))
+                        answer_content = answer_soup.find_all('div',class_='zm-editable-content')[-1].text
+                        print answer_content.replace('\n',' ')
+
                 except Exception, e:
-                    print 'find error' + str(e)
-
-                print zhihu_url + it.a['href'], it.a.string, vote
-
+                    print 'error' + str(e)
+                    
+    def writetotxt(self)
 
 
 if __name__ == '__main__':
@@ -107,7 +132,7 @@ if __name__ == '__main__':
     if zhihu.login():
         print 'login success!'
         usertuple = zhihu.get_userinfo()
-        zhihu.get_answer_list(usertuple[1])
+        zhihu.get_answer_list(usertuple[2])
 
 
 
