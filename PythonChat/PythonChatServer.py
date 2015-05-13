@@ -29,6 +29,7 @@ class RequestHandler(SocketServer.StreamRequestHandler):
         try:
             self.nickCommand(nickname)
             self.privateMessage('hello %s,welcome to the chatroom' % nickname)
+            print self.client_address
         except ClientError, e:
             self.privateMessage(e.args[0])
             done = True
@@ -76,7 +77,7 @@ class RequestHandler(SocketServer.StreamRequestHandler):
         if self.nickname:
             oldNickname = self.nickname
             del self.server.users[self.nickname]
-        self.server.users[nickname] = self.wfile
+        self.server.users[nickname] = self.wfile  #名字到wfile的映射,因此后面就可以用wfile.write
         self.nickname = nickname
         if oldNickname:
             self.broadcast('%s is now kown as %s' % (oldNickname, self.nickname))
@@ -89,6 +90,8 @@ class RequestHandler(SocketServer.StreamRequestHandler):
 
         if partingWords:
             self.partingWords = partingWords
+        else:
+            self.partingWords = ''
         return True
 
     def namesCommand(self, ignored):
