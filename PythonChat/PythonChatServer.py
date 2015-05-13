@@ -59,6 +59,11 @@ class RequestHandler(SocketServer.StreamRequestHandler):
         return self.rfile.readline().strip()
 
     def nickCommand(self, nickname):
+        """
+        this function allow to change the name
+        /nick newname
+        """
+
         if not nickname:
             raise ClientError('no nickname provided!')
         if not self.NICKNAME.match(nickname):
@@ -77,12 +82,38 @@ class RequestHandler(SocketServer.StreamRequestHandler):
             self.broadcast('%s is now kown as %s' % (oldNickname, self.nickname))
 
     def quitCommand(self, partingWords):
+        """
+        quit the chatroom
+        /quit quitmessage
+        """
+
         if partingWords:
             self.partingWords = partingWords
-            return True
+        return True
 
     def namesCommand(self, ignored):
+        """
+        show all the person name
+        /names
+        """
+
         self.privateMessage(', '.join(self.server.users.keys()))
+
+    def privateCommand(self,arg):
+        """
+        this function allow to send a message to a choose person
+        /private name msg
+        """
+
+        name = arg.split(' ')[0]
+        message = arg.split(' ')[1]
+        message = self._ensureNewline(message)
+        if name not in self.server.users.keys():
+            raise ClientError('there is nobody named %s' % name)
+        for user,output in self.server.users.items():
+            if user == name:
+                l = '<%s> %s\n' % (self.nickname,message)
+                output.write(l)
 
     def processInput(self):
         done = False
