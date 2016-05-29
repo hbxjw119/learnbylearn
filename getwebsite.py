@@ -6,17 +6,12 @@ import urllib2
 import urllib
 import socket 
 import random
-sys.path.append('/da2/huqingming/python/conf/')
 import agent
 reload(sys)
 sys.setdefaultencoding('utf8')
 
 headers={'User-Agent':'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.101 Safari/537.36'}
 
-file_ip = open('/da2/huqingming/python/conf/ip.conf','r')
-ip_value = file_ip.readlines()
-file_ip.close()
-len_ip_value = len(ip_value)
 
 def openHtml(url,timeout=10,trytime=3):
    if trytime <=0:
