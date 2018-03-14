@@ -50,4 +50,5 @@ func main() {
 	for i := range c {
 		fmt.Println(i)
 	}
+	fmt.Println("he")
 }
