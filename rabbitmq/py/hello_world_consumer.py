@@ -1,7 +1,10 @@
 import pika,sys
 
-credentials = pika.PlainCredentials('guest','guest')
-con = pika.ConnectionParameters('localhost',credentials=credentials)
+#credentials = pika.PlainCredentials('guest','guest')
+#con = pika.ConnectionParameters('localhost',credentials=credentials)
+
+credentials = pika.PlainCredentials('test','test')
+con = pika.ConnectionParameters('10.96.96.31',5672,credentials=credentials)
 
 con_broker = pika.BlockingConnection(con)
 
